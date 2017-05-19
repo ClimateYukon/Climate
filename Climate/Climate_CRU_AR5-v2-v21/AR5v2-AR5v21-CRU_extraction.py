@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
 
 	lyr = fiona.open(shp)
-	ft = [x for x in lyr if x['properties']['Name'] == 'Boreal_AK']
+	ft = [x for x in lyr if x['properties']['Name'] == 'Tundra_AK']
 
 	result = {
 		variable : {
@@ -68,4 +68,4 @@ if __name__ == '__main__':
 	for variable in variables :
 		result[variable]['CRU'] = pd.concat(CRU[variable].values(),axis=1)
 
-	pickle.dump( result, open( "/workspace/Shared/Users/jschroder/TMP/Climate_full_allV.p", "wb" ) )
+	pickle.dump( result, open( "/workspace/Shared/Users/jschroder/TMP/Climate_Tundra_full_allV.p", "wb" ) )

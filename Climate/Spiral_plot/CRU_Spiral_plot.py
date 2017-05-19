@@ -18,7 +18,7 @@ sns.set(style="whitegrid")
 data_out = '/workspace/Shared/Users/jschroder/TMP/spiral_Arctic/'
 # import matplotlib.pyplot as plt
 if not os.path.exists( data_out ):
-	os.mkdir( data_out )
+    os.mkdir( data_out )
 # %matplotlib inline
 
 def transform_from_latlon(lat, lon):
@@ -48,22 +48,22 @@ states = geopandas.read_file('/workspace/Shared/Users/jschroder/TMP/circum_regio
 #states = geopandas.read_file('/workspace/Shared/Users/jschroder/TMP/ne_10m_admin_1_states_provinces.shp')
 
 #For Arctic :
-states = geopandas.read_file('/workspace/Shared/Users/jschroder/TMP/circum_region.shp')
-us_states = states
-state_ids = {k: i for i, k in enumerate(us_states.adm1_code)}
-shapes = zip(us_states.geometry, range(len(us_states)))
-ds = xray.open_dataset('/workspace/Shared/Users/jschroder/TMP/cru_ts3.23.1901.2014.tmp.dat.nc')
-ds['states'] = rasterize(shapes, ds.coords, longitude='lon', latitude='lat')
-arr = ds.tmp.where(ds.states == state_ids['Arctic'])
-
-# For Alaska :
-# states = geopandas.read_file('/workspace/Shared/Users/jschroder/TMP/ne_10m_admin_1_states_provinces.shp')
-# us_states = states.query("admin == 'United States of America'").reset_index(drop=True)
-# state_ids = {k: i for i, k in enumerate(us_states.woe_name)}
+# states = geopandas.read_file('/workspace/Shared/Users/jschroder/TMP/circum_region.shp')
+# us_states = states
+# state_ids = {k: i for i, k in enumerate(us_states.adm1_code)}
 # shapes = zip(us_states.geometry, range(len(us_states)))
 # ds = xray.open_dataset('/workspace/Shared/Users/jschroder/TMP/cru_ts3.23.1901.2014.tmp.dat.nc')
 # ds['states'] = rasterize(shapes, ds.coords, longitude='lon', latitude='lat')
-# arr = ds.tmp.where(ds.states == state_ids['Alaska']).sel(lon=slice(-175, -125), lat=slice(53, 73))
+# arr = ds.tmp.where(ds.states == state_ids['Arctic'])
+
+# For Alaska :
+states = geopandas.read_file('/workspace/Shared/Users/jschroder/TMP/ne_10m_admin_1_states_provinces.shp')
+us_states = states.query("admin == 'United States of America'").reset_index(drop=True)
+state_ids = {k: i for i, k in enumerate(us_states.woe_name)}
+shapes = zip(us_states.geometry, range(len(us_states)))
+ds = xray.open_dataset('/workspace/Shared/Users/jschroder/TMP/cru_ts4.00.1901.2015.tmp.dat.nc')
+ds['states'] = rasterize(shapes, ds.coords, longitude='lon', latitude='lat')
+arr = ds.tmp.where(ds.states == state_ids['Alaska']).sel(lon=slice(-175, -125), lat=slice(53, 73))
 
 
 d = {'mean' : [arr[i].mean().data.item() for i in range(0, len(arr.time))]}
@@ -103,32 +103,30 @@ full_df = full_df.reset_index()
 cm = plt.get_cmap('rainbow')
 #cm = sns.color_palette("cubehelix", 8)
 length = full_df.degree.__len__()
-color = [cm(i/(length-1)) for i in range(length-1)]
+color = [cm(i/(length-1)) for i in range(length)]
 fig = plt.figure()
 ax = plt.subplot(111, projection='polar')
 period = 1
 for i in range(length):
-	ax.plot(full_df.degree[i*period:((i+1)*period+1)], full_df.anomalies[i*period:((i+1)*period+1)], color = color[i*period],alpha=0.5)
-	ax.set_thetagrids(np.linspace(360/24, 360*23/24, 12))
-	ax.set_theta_direction('clockwise')
-	ax.set_theta_offset(np.pi/2)
-	ax.xaxis.set_ticklabels(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
-	ax.set_rmin(min(full_df.anomalies)*1.1)
-	ax.set_rmax(max(full_df.anomalies)*1.1)
-	ax.set_yticks([-10,-5,0,5,10])
-	ax.set_yticklabels(["-10c","-5c","0c","+5c","+10c"])
+    print(period)
+    ax.plot(full_df.degree[i*period:((i+1)*period+1)], full_df.anomalies[i*period:((i+1)*period+1)], color = color[i*period],alpha=0.4,linewidth=0.8)
+    ax.set_thetagrids(np.linspace(360/24, 360*23/24, 12))
+    ax.set_theta_direction('clockwise')
+    ax.set_theta_offset(np.pi/2)
+    ax.xaxis.set_ticklabels(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
+    ax.set_rmin(min(full_df.anomalies)*1.1)
+    ax.set_rmax(max(full_df.anomalies)*1.1)
+    ax.set_yticks([-10,-5,0,5,10])
+    ax.set_yticklabels(["-10c","-5c","0c","+5c","+10c"])
 
-	fig.subplots_adjust(top=.88)
-	plt.title('%s - Arctic Regions'%full_df.Year[i*period],fontsize = 15,y=1.08)
-	if i == 0 :
-		fig.text(0.01, 0.01, 'CRU TS v. 3.23 - Anomalies (1900-1930)', fontsize=11)
-	else:
-		pass
-	plt.savefig(os.path.join(data_out, dt.datetime(full_df.Year[i*period], full_df.Month[i*period], full_df.Day[i*period]).strftime("%Y%m%d")+'.png'),figsize = ( 14, 8 ), dpi=150)
+    fig.subplots_adjust(top=.88)
+    plt.title('%s - Alaska'%full_df.Year[i*period],fontsize = 15,y=1.08)
+    if i == 0 :
+        fig.text(0.01, 0.01, 'CRU TS v. 4.00- Anomalies (1900-1930)', fontsize=11)
+    else:
+        pass
+    plt.savefig(os.path.join(data_out, dt.datetime(full_df.Year[i*period], full_df.Month[i*period], full_df.Day[i*period]).strftime("%Y%m%d")+'.png'),figsize = ( 14, 8 ), dpi=150)
 
 plt.close()
-
-
-
 
 
